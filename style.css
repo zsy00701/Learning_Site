@@ -2881,3 +2881,410 @@ input:checked + .slider:before {
     }
 }
 
+/* ==================== 快捷操作菜单 ==================== */
+.quick-menu-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.quick-menu-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 6px 30px rgba(99, 102, 241, 0.6);
+}
+
+.quick-menu-panel {
+    position: fixed;
+    bottom: 100px;
+    left: 30px;
+    background: var(--surface-color);
+    border-radius: 12px;
+    border: 2px solid #6366f1;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    min-width: 150px;
+}
+
+.quick-menu-panel.show {
+    display: flex;
+    animation: slideInUp 0.3s ease;
+}
+
+.quick-menu-item {
+    padding: 12px 15px;
+    background: var(--paper-bg);
+    border: 1px solid var(--surface-light);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.quick-menu-item:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    border-color: #6366f1;
+    transform: translateX(5px);
+}
+
+/* ==================== 数据统计面板 ==================== */
+.stats-modal, .report-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.stats-modal.show, .report-modal.show {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.stats-modal-content, .report-modal-content {
+    background: var(--surface-color);
+    border-radius: 15px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.stats-modal-header, .report-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    background: linear-gradient(135deg, var(--ink-dark), var(--ink-medium));
+    border-radius: 15px 15px 0 0;
+    color: white;
+}
+
+.stats-modal-header h2, .report-modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.btn-close-modal {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.btn-close-modal:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.stats-modal-body, .report-modal-body {
+    padding: 25px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-box {
+    background: var(--paper-bg);
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid var(--surface-light);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+    border-color: var(--cinnabar);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--cinnabar);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.stats-details {
+    background: var(--paper-bg);
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid var(--surface-light);
+}
+
+.stats-details h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--ink-dark);
+}
+
+.stats-paths {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stats-path-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: var(--surface-color);
+    border-radius: 8px;
+    border-left: 4px solid var(--cinnabar);
+}
+
+.path-name {
+    font-weight: 600;
+}
+
+.path-time {
+    color: var(--cinnabar);
+    font-weight: bold;
+}
+
+/* ==================== 首次使用引导 ==================== */
+.welcome-guide {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.welcome-guide.show {
+    display: flex;
+    animation: fadeIn 0.5s ease;
+}
+
+.welcome-content {
+    background: var(--surface-color);
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideDown 0.5s ease;
+}
+
+.welcome-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: var(--ink-dark);
+}
+
+.welcome-content > p {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+.welcome-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.welcome-step {
+    padding: 20px 15px;
+    background: var(--paper-bg);
+    border-radius: 12px;
+    border: 2px solid var(--surface-light);
+    transition: all 0.3s ease;
+}
+
+.welcome-step:hover {
+    border-color: var(--cinnabar);
+    transform: translateY(-5px);
+}
+
+.step-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.welcome-step h3 {
+    font-size: 1rem;
+    margin: 10px 0 5px;
+    color: var(--ink-dark);
+}
+
+.welcome-step p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.btn-start-journey {
+    padding: 15px 50px;
+    background: linear-gradient(135deg, var(--cinnabar), var(--cinnabar-light));
+    border: none;
+    border-radius: 30px;
+    color: white;
+    font-size: 1.2rem;
+    font-family: var(--font-serif);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 20px rgba(192, 57, 43, 0.4);
+    margin-bottom: 15px;
+}
+
+.btn-start-journey:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(192, 57, 43, 0.6);
+}
+
+.dont-show-again {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.dont-show-again input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* 学习报告样式 */
+.report-section {
+    margin-bottom: 25px;
+}
+
+.report-section h3 {
+    color: var(--ink-dark);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--surface-light);
+}
+
+.report-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.report-item {
+    padding: 15px;
+    background: var(--paper-bg);
+    border-radius: 10px;
+    border-left: 4px solid var(--cinnabar);
+    text-align: center;
+}
+
+.report-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--cinnabar);
+    margin-bottom: 5px;
+}
+
+.report-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.report-chart {
+    background: var(--paper-bg);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .quick-menu-btn {
+        bottom: 20px;
+        left: 20px;
+        width: 55px;
+        height: 55px;
+    }
+    
+    .quick-menu-panel {
+        bottom: 85px;
+        left: 20px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .welcome-steps {
+        grid-template-columns: 1fr;
+    }
+    
+    .welcome-content {
+        padding: 30px 20px;
+    }
+}
+

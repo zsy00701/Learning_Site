@@ -405,6 +405,18 @@
         <p class="footer-sub">坚持修行，终成大器 | Made with ❤️</p>
     </footer>
 
+    <!-- 快捷操作菜单 -->
+    <div class="quick-menu-btn" id="quickMenuBtn" title="快捷菜单">
+        ⚡
+    </div>
+    
+    <div class="quick-menu-panel" id="quickMenuPanel">
+        <button class="quick-menu-item" data-action="stats">📊 数据统计</button>
+        <button class="quick-menu-item" data-action="report">📋 学习周报</button>
+        <button class="quick-menu-item" data-action="export">💾 导出数据</button>
+        <button class="quick-menu-item" data-action="focus">🎯 专注模式</button>
+    </div>
+    
     <!-- 浮动音乐播放器 -->
     <div class="music-float-btn" id="musicFloatBtn" title="音乐播放器">
         🎵
@@ -452,6 +464,115 @@
             <div class="now-playing-mini">
                 <span id="nowPlayingText">未播放</span>
             </div>
+        </div>
+    </div>
+
+    <!-- 数据统计面板 -->
+    <div class="stats-modal" id="statsModal">
+        <div class="stats-modal-content">
+            <div class="stats-modal-header">
+                <h2>📊 修行数据统计</h2>
+                <button class="btn-close-modal" id="closeStatsModal">✕</button>
+            </div>
+            <div class="stats-modal-body">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-value" id="statTotalTime">0</div>
+                        <div class="stat-label">总修行时长</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">🔥</div>
+                        <div class="stat-value" id="statMaxStreak">0</div>
+                        <div class="stat-label">最高连胜</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-value" id="statTotalDays">0</div>
+                        <div class="stat-label">累计打卡</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value" id="statTotalTasks">0</div>
+                        <div class="stat-label">完成任务</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-value" id="statAchievements">0</div>
+                        <div class="stat-label">解锁成就</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon">📚</div>
+                        <div class="stat-value" id="statCourses">0</div>
+                        <div class="stat-label">学习课程</div>
+                    </div>
+                </div>
+                <div class="stats-details">
+                    <h3>📈 修行明细</h3>
+                    <div class="stats-paths">
+                        <div class="stats-path-item">
+                            <span class="path-name">👊 内功心法</span>
+                            <span class="path-time" id="pathCS">0 时辰</span>
+                        </div>
+                        <div class="stats-path-item">
+                            <span class="path-name">🗡️ 万剑归宗</span>
+                            <span class="path-time" id="pathLLM">0 时辰</span>
+                        </div>
+                        <div class="stats-path-item">
+                            <span class="path-name">⚔️ 独孤九剑</span>
+                            <span class="path-time" id="pathRL">0 时辰</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 学习周报 -->
+    <div class="report-modal" id="reportModal">
+        <div class="report-modal-content">
+            <div class="report-modal-header">
+                <h2>📋 本周修行报告</h2>
+                <button class="btn-close-modal" id="closeReportModal">✕</button>
+            </div>
+            <div class="report-modal-body" id="reportContent">
+                <!-- 通过 JS 生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 首次使用引导 -->
+    <div class="welcome-guide" id="welcomeGuide">
+        <div class="welcome-content">
+            <h2>🗡️ 欢迎来到墨池剑冢</h2>
+            <p>仗剑走天涯，诗酒趁年华</p>
+            <div class="welcome-steps">
+                <div class="welcome-step">
+                    <div class="step-icon">🎯</div>
+                    <h3>设定目标</h3>
+                    <p>在"修炼目标"设定每日学习目标</p>
+                </div>
+                <div class="welcome-step">
+                    <div class="step-icon">⏱️</div>
+                    <h3>开始修行</h3>
+                    <p>选择心法，使用计时器专注学习</p>
+                </div>
+                <div class="welcome-step">
+                    <div class="step-icon">📖</div>
+                    <h3>记录进度</h3>
+                    <p>添加课程，追踪学习进度</p>
+                </div>
+                <div class="welcome-step">
+                    <div class="step-icon">🏮</div>
+                    <h3>每日打卡</h3>
+                    <p>坚持打卡，解锁成就徽章</p>
+                </div>
+            </div>
+            <button id="startJourney" class="btn-start-journey">开始修行之旅</button>
+            <label class="dont-show-again">
+                <input type="checkbox" id="dontShowAgain">
+                <span>不再显示</span>
+            </label>
         </div>
     </div>
 

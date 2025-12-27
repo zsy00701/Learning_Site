@@ -2064,6 +2064,136 @@ setTimeout(() => {
     showNotification(`🗡️ ${greeting}`, 'info');
 }, 2000);
 
+// ==================== 数据统计系统 ====================
+function showStatsModal() {
+    const modal = document.getElementById('statsModal');
+    if (!modal) return;
+    
+    // 更新统计数据
+    document.getElementById('statTotalTime').textContent = dataStore.data.totalHours.toFixed(1) + '时辰';
+    document.getElementById('statMaxStreak').textContent = dataStore.data.maxStreak + '天';
+    document.getElementById('statTotalDays').textContent = dataStore.data.totalCheckinDays + '天';
+    document.getElementById('statTotalTasks').textContent = dataStore.data.totalTasksCompleted;
+    document.getElementById('statAchievements').textContent = dataStore.data.unlockedAchievements.length + '/' + achievementsData.length;
+    
+    // 课程统计
+    const courses = JSON.parse(localStorage.getItem('studyCourses') || '[]');
+    document.getElementById('statCourses').textContent = courses.length;
+    
+    // 各方向时长
+    document.getElementById('pathCS').textContent = dataStore.data.learningPaths['cs-basics'].toFixed(1) + ' 时辰';
+    document.getElementById('pathLLM').textContent = dataStore.data.learningPaths['llm'].toFixed(1) + ' 时辰';
+    document.getElementById('pathRL').textContent = dataStore.data.learningPaths['rl'].toFixed(1) + ' 时辰';
+    
+    modal.classList.add('show');
+}
+
+function generateWeeklyReport() {
+    const modal = document.getElementById('reportModal');
+    const content = document.getElementById('reportContent');
+    if (!modal || !content) return;
+    
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - 6);
+    
+    // 计算本周数据
+    let weekHours = 0;
+    let weekDays = 0;
+    const dailyData = [];
+    
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(weekStart);
+        date.setDate(weekStart.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const hours = dataStore.data.dailyHistory[dateStr] || 0;
+        weekHours += hours;
+        if (hours > 0) weekDays++;
+        dailyData.push({ date: dateStr, hours, day: ['日', '一', '二', '三', '四', '五', '六'][date.getDay()] });
+    }
+    
+    const avgHours = weekDays > 0 ? (weekHours / weekDays).toFixed(1) : 0;
+    const bestDay = dailyData.reduce((max, day) => day.hours > max.hours ? day : max, dailyData[0]);
+    
+    // 生成报告HTML
+    content.innerHTML = `
+        <div class="report-section">
+            <h3>📊 本周概况</h3>
+            <div class="report-summary">
+                <div class="report-item">
+                    <div class="report-value">${weekHours.toFixed(1)}</div>
+                    <div class="report-label">总修行时长（时辰）</div>
+                </div>
+                <div class="report-item">
+                    <div class="report-value">${weekDays}</div>
+                    <div class="report-label">修行天数</div>
+                </div>
+                <div class="report-item">
+                    <div class="report-value">${avgHours}</div>
+                    <div class="report-label">日均时长（时辰）</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="report-section">
+            <h3>📅 每日明细</h3>
+            <div class="report-chart">
+                ${dailyData.map(day => `
+                    <div class="report-day-item" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--surface-light);">
+                        <span>${day.day} (${day.date.slice(5)})</span>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:200px;height:8px;background:var(--surface-light);border-radius:4px;overflow:hidden;">
+                                <div style="width:${Math.min((day.hours / Math.max(bestDay.hours, 1)) * 100, 100)}%;height:100%;background:var(--cinnabar);"></div>
+                            </div>
+                            <span style="min-width:60px;text-align:right;color:var(--cinnabar);font-weight:bold;">${day.hours.toFixed(1)}h</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="report-section">
+            <h3>🏆 本周成就</h3>
+            <div class="report-summary">
+                <div class="report-item">
+                    <div class="report-value">${bestDay.day}</div>
+                    <div class="report-label">最勤奋的一天</div>
+                </div>
+                <div class="report-item">
+                    <div class="report-value">${dataStore.data.checkinStreak}</div>
+                    <div class="report-label">当前连胜</div>
+                </div>
+                <div class="report-item">
+                    <div class="report-value">${dataStore.data.totalTasksCompleted}</div>
+                    <div class="report-label">累计完成任务</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="report-section">
+            <p style="text-align:center;color:var(--text-secondary);padding:20px;background:var(--paper-bg);border-radius:10px;margin-top:20px;">
+                ${weekHours > 10 ? '🎉 本周修行勤奋，继续保持！' : weekHours > 5 ? '💪 本周表现不错，再接再厉！' : '⚡ 继续努力，每天进步一点点！'}
+            </p>
+        </div>
+    `;
+    
+    modal.classList.add('show');
+}
+
+// ==================== 首次使用引导 ====================
+function checkFirstVisit() {
+    const hasVisited = localStorage.getItem('hasVisited');
+    if (!hasVisited) {
+        setTimeout(() => {
+            const guide = document.getElementById('welcomeGuide');
+            if (guide) guide.classList.add('show');
+        }, 1000);
+    }
+}
+
+// 初始化时检查首次访问
+checkFirstVisit();
+
 // ==================== 课程学习跟踪系统 ====================
 class CourseTracker {
     constructor() {
@@ -2653,6 +2783,91 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('customAudioUrl')?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             document.getElementById('loadCustomAudio')?.click();
+        }
+    });
+    
+    // ==================== 快捷菜单事件 ====================
+    
+    // 快捷菜单显示/隐藏
+    document.getElementById('quickMenuBtn')?.addEventListener('click', () => {
+        const panel = document.getElementById('quickMenuPanel');
+        if (panel) {
+            panel.classList.toggle('show');
+        }
+    });
+    
+    // 快捷菜单项点击
+    document.querySelectorAll('.quick-menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const action = item.dataset.action;
+            const panel = document.getElementById('quickMenuPanel');
+            if (panel) panel.classList.remove('show');
+            
+            switch(action) {
+                case 'stats':
+                    showStatsModal();
+                    break;
+                case 'report':
+                    generateWeeklyReport();
+                    break;
+                case 'export':
+                    dataStore.exportData();
+                    showNotification('📦 数据已导出！', 'success');
+                    break;
+                case 'focus':
+                    focusMode.toggle();
+                    break;
+            }
+        });
+    });
+    
+    // 关闭统计面板
+    document.getElementById('closeStatsModal')?.addEventListener('click', () => {
+        document.getElementById('statsModal')?.classList.remove('show');
+    });
+    
+    // 关闭报告面板
+    document.getElementById('closeReportModal')?.addEventListener('click', () => {
+        document.getElementById('reportModal')?.classList.remove('show');
+    });
+    
+    // 点击模态框外部关闭
+    document.getElementById('statsModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'statsModal') {
+            e.target.classList.remove('show');
+        }
+    });
+    
+    document.getElementById('reportModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'reportModal') {
+            e.target.classList.remove('show');
+        }
+    });
+    
+    // ==================== 首次使用引导事件 ====================
+    
+    // 开始修行按钮
+    document.getElementById('startJourney')?.addEventListener('click', () => {
+        const dontShow = document.getElementById('dontShowAgain');
+        if (dontShow && dontShow.checked) {
+            localStorage.setItem('hasVisited', 'true');
+        }
+        
+        document.getElementById('welcomeGuide')?.classList.remove('show');
+        showNotification('🗡️ 欢迎来到墨池剑冢，开始你的修行之旅吧！', 'success');
+        
+        // 标记已访问（即使没勾选，本次也算访问过）
+        if (!dontShow || !dontShow.checked) {
+            localStorage.setItem('hasVisited', 'true');
+        }
+    });
+    
+    // ESC 键关闭所有模态框
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.getElementById('statsModal')?.classList.remove('show');
+            document.getElementById('reportModal')?.classList.remove('show');
+            document.getElementById('quickMenuPanel')?.classList.remove('show');
         }
     });
 });
