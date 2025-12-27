@@ -160,7 +160,9 @@ class DataStore {
             lastStudyDate: null,
             totalTasksCompleted: 0,
             totalSessions: 0,
-            longestSession: 0
+            longestSession: 0,
+            achievementUnlockTimes: {}, // 成就解锁时间记录
+            totalPomodoros: 0 // 番茄钟计数
         };
         
         const saved = localStorage.getItem('studyData');
@@ -291,6 +293,11 @@ class DataStore {
             
             if (unlocked) {
                 this.data.unlockedAchievements.push(achievement.id);
+                // 记录解锁时间
+                if (!this.data.achievementUnlockTimes) {
+                    this.data.achievementUnlockTimes = {};
+                }
+                this.data.achievementUnlockTimes[achievement.id] = new Date().toISOString();
                 newlyUnlocked.push(achievement);
             }
         });
@@ -580,7 +587,7 @@ class DailyPlan {
         }));
     }
 
-    addTask(text, difficulty = 'normal', priority = 'medium') {
+    addTask(text, difficulty = 'normal', priority = 'medium', tags = []) {
         if (!text || text.trim() === '') return false;
         
         this.tasks.push({
@@ -588,6 +595,7 @@ class DailyPlan {
             text: text.trim(),
             difficulty: difficulty,
             priority: priority,
+            tags: tags,
             completed: false,
             createdAt: new Date().toISOString()
         });
@@ -659,6 +667,11 @@ class StudyTimer {
         this.selectedPath = null;
         this.elapsedMinutes = 0;
         this.breakReminderInterval = null;
+        this.mode = 'normal'; // normal 或 pomodoro
+        this.pomodoroCount = 0; // 番茄钟计数
+        this.pomodoroPhase = 'work'; // work 或 break
+        this.workDuration = 25 * 60; // 工作时长（25分钟）
+        this.breakDuration = 5 * 60; // 休息时长（5分钟）
     }
 
     setTime(minutes) {
@@ -757,20 +770,60 @@ class StudyTimer {
     complete() {
         this.pause();
         const studiedMinutes = this.initialMinutes;
-        dataStore.addStudyTime(this.selectedPath, studiedMinutes);
         
-        if (settings.settings.soundEnabled) {
-            this.playCompletionSound();
-        }
-        
-        // 触发奇遇（有概率）
-        if (Math.random() < 0.7) {
-            setTimeout(() => this.triggerAdventure(studiedMinutes), 500);
+        // 番茄钟模式处理
+        if (this.mode === 'pomodoro') {
+            if (this.pomodoroPhase === 'work') {
+                // 工作阶段完成
+                this.pomodoroCount++;
+                document.getElementById('pomodoroCount').textContent = this.pomodoroCount;
+                dataStore.addStudyTime(this.selectedPath, studiedMinutes);
+                
+                if (settings.settings.soundEnabled) {
+                    this.playCompletionSound();
+                }
+                
+                // 切换到休息阶段
+                this.pomodoroPhase = 'break';
+                this.initialMinutes = this.breakDuration / 60;
+                this.totalSeconds = this.breakDuration;
+                document.getElementById('pomodoroPhase').textContent = '休息阶段';
+                showNotification('🍅 工作完成！开始5分钟休息', 'success');
+                
+                // 触发奇遇
+                if (Math.random() < 0.7) {
+                    setTimeout(() => this.triggerAdventure(studiedMinutes), 500);
+                }
+                
+                // 自动开始休息倒计时
+                this.updateDisplay();
+                setTimeout(() => this.start(), 1000);
+            } else {
+                // 休息阶段完成
+                this.pomodoroPhase = 'work';
+                this.initialMinutes = this.workDuration / 60;
+                this.totalSeconds = this.workDuration;
+                document.getElementById('pomodoroPhase').textContent = '工作阶段';
+                showNotification('☕ 休息结束！准备开始新的番茄钟', 'info');
+                this.updateDisplay();
+            }
         } else {
-            showNotification(`🎉 修行完成！获得 ${(studiedMinutes / 60).toFixed(1)} 时辰修为`, 'success');
+            // 普通模式
+            dataStore.addStudyTime(this.selectedPath, studiedMinutes);
+            
+            if (settings.settings.soundEnabled) {
+                this.playCompletionSound();
+            }
+            
+            // 触发奇遇（有概率）
+            if (Math.random() < 0.7) {
+                setTimeout(() => this.triggerAdventure(studiedMinutes), 500);
+            } else {
+                showNotification(`🎉 修行完成！获得 ${(studiedMinutes / 60).toFixed(1)} 时辰修为`, 'success');
+            }
+            
+            this.reset();
         }
-        
-        this.reset();
     }
     
     triggerAdventure(minutes) {
@@ -1170,11 +1223,16 @@ function renderDailyPlan() {
         const diff = difficultyLabels[task.difficulty || 'normal'];
         const priority = priorityLabels[task.priority || 'medium'];
         
+        const tagsHTML = task.tags && task.tags.length > 0 
+            ? `<div class="task-tags">${task.tags.map(tag => `<span class="task-tag">${escapeHtml(tag)}</span>`).join('')}</div>`
+            : '';
+        
         taskEl.innerHTML = `
             <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} data-id="${task.id}">
             <span class="task-difficulty ${diff.class}" title="难度">${diff.text}</span>
             <span class="task-priority ${priority.class}" title="优先级">${priority.text}</span>
             <span class="task-text">${escapeHtml(task.text)}</span>
+            ${tagsHTML}
             <button class="task-delete" data-id="${task.id}">✕</button>
         `;
         
@@ -1448,14 +1506,18 @@ function addTaskFromInput() {
     const input = document.getElementById('taskInput');
     const difficultySelect = document.getElementById('taskDifficulty');
     const prioritySelect = document.getElementById('taskPriority');
+    const tagsInput = document.getElementById('taskTags');
     
     const text = input?.value.trim();
     const difficulty = difficultySelect?.value || 'normal';
     const priority = prioritySelect?.value || 'medium';
+    const tagsText = tagsInput?.value.trim() || '';
+    const tags = tagsText ? tagsText.split(',').map(t => t.trim()).filter(t => t) : [];
     
     if (text) {
-        if (dailyPlan.addTask(text, difficulty, priority)) {
+        if (dailyPlan.addTask(text, difficulty, priority, tags)) {
             input.value = '';
+            if (tagsInput) tagsInput.value = '';
             renderDailyPlan();
             showNotification('📋 任务已添加', 'success');
             
@@ -2194,6 +2256,248 @@ function checkFirstVisit() {
 // 初始化时检查首次访问
 checkFirstVisit();
 
+// ==================== 番茄钟模式切换 ====================
+function switchTimerMode(mode) {
+    timer.mode = mode;
+    timer.reset();
+    
+    const pomodoroInfo = document.getElementById('pomodoroInfo');
+    if (mode === 'pomodoro') {
+        timer.setTime(25); // 固定25分钟
+        timer.pomodoroPhase = 'work';
+        timer.pomodoroCount = 0;
+        if (pomodoroInfo) {
+            pomodoroInfo.style.display = 'flex';
+            document.getElementById('pomodoroCount').textContent = '0';
+            document.getElementById('pomodoroPhase').textContent = '工作阶段';
+        }
+        showNotification('🍅 番茄钟模式开启！25分钟专注 + 5分钟休息', 'info');
+    } else {
+        if (pomodoroInfo) pomodoroInfo.style.display = 'none';
+        showNotification('🎯 切换到普通模式', 'info');
+    }
+}
+
+// ==================== 徽章墙展示 ====================
+function showBadgesModal() {
+    const modal = document.getElementById('badgesModal');
+    const grid = document.getElementById('badgesGrid');
+    if (!modal || !grid) return;
+    
+    const unlockedBadges = dataStore.data.unlockedAchievements;
+    const totalBadges = achievementsData.length;
+    const progress = (unlockedBadges.length / totalBadges * 100).toFixed(0);
+    
+    // 更新进度
+    document.getElementById('badgesUnlocked').textContent = unlockedBadges.length;
+    document.getElementById('badgesTotal').textContent = totalBadges;
+    document.getElementById('badgesProgressFill').style.width = progress + '%';
+    
+    // 生成徽章卡片
+    grid.innerHTML = achievementsData.map(achievement => {
+        const unlocked = unlockedBadges.includes(achievement.id);
+        const unlockedData = dataStore.data.achievementUnlockTimes?.[achievement.id];
+        const unlockedTime = unlockedData ? new Date(unlockedData).toLocaleDateString('zh-CN') : '';
+        
+        return `
+            <div class="badge-card ${unlocked ? 'unlocked' : 'locked'}">
+                <div class="badge-icon">${achievement.icon}</div>
+                <div class="badge-name">${achievement.name}</div>
+                <div class="badge-desc">${achievement.description}</div>
+                ${unlocked && unlockedTime ? `<div class="badge-unlocked-time">解锁于 ${unlockedTime}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+    
+    modal.classList.add('show');
+}
+
+// ==================== 数据对比 ====================
+function showCompareModal() {
+    const modal = document.getElementById('compareModal');
+    const content = document.getElementById('compareContent');
+    if (!modal || !content) return;
+    
+    const today = new Date();
+    const history = dataStore.data.dailyHistory || {};
+    
+    // 计算本周数据
+    let thisWeekHours = 0;
+    let thisWeekDays = 0;
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        const hours = history[dateStr] || 0;
+        thisWeekHours += hours;
+        if (hours > 0) thisWeekDays++;
+    }
+    
+    // 计算上周数据
+    let lastWeekHours = 0;
+    let lastWeekDays = 0;
+    for (let i = 7; i < 14; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        const hours = history[dateStr] || 0;
+        lastWeekHours += hours;
+        if (hours > 0) lastWeekDays++;
+    }
+    
+    // 计算变化
+    const hoursChange = thisWeekHours - lastWeekHours;
+    const daysChange = thisWeekDays - lastWeekDays;
+    const hoursChangePercent = lastWeekHours > 0 ? ((hoursChange / lastWeekHours) * 100).toFixed(1) : '0';
+    
+    const hoursChangeClass = hoursChange > 0 ? 'positive' : hoursChange < 0 ? 'negative' : 'neutral';
+    const daysChangeClass = daysChange > 0 ? 'positive' : daysChange < 0 ? 'negative' : 'neutral';
+    
+    content.innerHTML = `
+        <div class="compare-section">
+            <h3>📊 学习时长对比</h3>
+            <div class="compare-cards">
+                <div class="compare-card">
+                    <div class="compare-period">上周</div>
+                    <div class="compare-value">${lastWeekHours.toFixed(1)}</div>
+                    <div class="compare-label">时辰</div>
+                </div>
+                <div class="compare-card current">
+                    <div class="compare-period">本周</div>
+                    <div class="compare-value">${thisWeekHours.toFixed(1)}</div>
+                    <div class="compare-label">时辰</div>
+                </div>
+            </div>
+            <div class="compare-change ${hoursChangeClass}">
+                ${hoursChange > 0 ? '📈' : hoursChange < 0 ? '📉' : '➡️'}
+                ${hoursChange > 0 ? '+' : ''}${hoursChange.toFixed(1)} 时辰
+                (${hoursChangePercent > 0 ? '+' : ''}${hoursChangePercent}%)
+            </div>
+        </div>
+        
+        <div class="compare-section">
+            <h3>📅 学习天数对比</h3>
+            <div class="compare-cards">
+                <div class="compare-card">
+                    <div class="compare-period">上周</div>
+                    <div class="compare-value">${lastWeekDays}</div>
+                    <div class="compare-label">天</div>
+                </div>
+                <div class="compare-card current">
+                    <div class="compare-period">本周</div>
+                    <div class="compare-value">${thisWeekDays}</div>
+                    <div class="compare-label">天</div>
+                </div>
+            </div>
+            <div class="compare-change ${daysChangeClass}">
+                ${daysChange > 0 ? '📈' : daysChange < 0 ? '📉' : '➡️'}
+                ${daysChange > 0 ? '+' : ''}${daysChange} 天
+            </div>
+        </div>
+        
+        <div class="compare-section">
+            <h3>💬 数据分析</h3>
+            <p style="padding:20px;background:var(--paper-bg);border-radius:10px;text-align:center;color:var(--text-secondary);">
+                ${hoursChange > 0 
+                    ? `🎉 本周比上周多学习了 ${hoursChange.toFixed(1)} 时辰，进步明显！继续保持！` 
+                    : hoursChange < 0 
+                    ? `⚠️ 本周比上周少学习了 ${Math.abs(hoursChange).toFixed(1)} 时辰，需要加把劲哦！` 
+                    : '➡️ 本周与上周学习时长相当，保持稳定。'}
+            </p>
+        </div>
+    `;
+    
+    modal.classList.add('show');
+}
+
+// ==================== 学习提醒通知 ====================
+class StudyReminder {
+    constructor() {
+        this.enabled = localStorage.getItem('notificationEnabled') === 'true';
+        this.time = localStorage.getItem('notificationTime') || '20:00';
+        this.checkInterval = null;
+    }
+    
+    async requestPermission() {
+        if ('Notification' in window) {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                showNotification('✅ 已开启学习提醒通知', 'success');
+                this.enabled = true;
+                localStorage.setItem('notificationEnabled', 'true');
+                this.startChecking();
+                return true;
+            } else {
+                showNotification('❌ 通知权限被拒绝', 'error');
+                return false;
+            }
+        } else {
+            showNotification('❌ 浏览器不支持通知功能', 'error');
+            return false;
+        }
+    }
+    
+    startChecking() {
+        if (!this.enabled) return;
+        
+        // 每分钟检查一次
+        this.checkInterval = setInterval(() => {
+            const now = new Date();
+            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            if (currentTime === this.time) {
+                this.sendNotification();
+            }
+        }, 60000);
+        
+        // 立即检查一次
+        const now = new Date();
+        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        if (currentTime === this.time) {
+            this.sendNotification();
+        }
+    }
+    
+    stopChecking() {
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+        }
+    }
+    
+    sendNotification() {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('🗡️ 墨池剑冢提醒你', {
+                body: '该修行了！仗剑走天涯，诗酒趁年华',
+                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">🗡️</text></svg>',
+                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">🗡️</text></svg>'
+            });
+        }
+    }
+    
+    setTime(time) {
+        this.time = time;
+        localStorage.setItem('notificationTime', time);
+        this.stopChecking();
+        if (this.enabled) {
+            this.startChecking();
+        }
+    }
+    
+    toggle(enabled) {
+        this.enabled = enabled;
+        localStorage.setItem('notificationEnabled', enabled);
+        
+        if (enabled) {
+            this.requestPermission();
+        } else {
+            this.stopChecking();
+        }
+    }
+}
+
+const studyReminder = new StudyReminder();
+
 // ==================== 课程学习跟踪系统 ====================
 class CourseTracker {
     constructor() {
@@ -2810,6 +3114,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'report':
                     generateWeeklyReport();
                     break;
+                case 'badges':
+                    showBadgesModal();
+                    break;
+                case 'compare':
+                    showCompareModal();
+                    break;
                 case 'export':
                     dataStore.exportData();
                     showNotification('📦 数据已导出！', 'success');
@@ -2831,6 +3141,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('reportModal')?.classList.remove('show');
     });
     
+    // 关闭徽章墙
+    document.getElementById('closeBadgesModal')?.addEventListener('click', () => {
+        document.getElementById('badgesModal')?.classList.remove('show');
+    });
+    
+    // 关闭对比面板
+    document.getElementById('closeCompareModal')?.addEventListener('click', () => {
+        document.getElementById('compareModal')?.classList.remove('show');
+    });
+    
     // 点击模态框外部关闭
     document.getElementById('statsModal')?.addEventListener('click', (e) => {
         if (e.target.id === 'statsModal') {
@@ -2840,6 +3160,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('reportModal')?.addEventListener('click', (e) => {
         if (e.target.id === 'reportModal') {
+            e.target.classList.remove('show');
+        }
+    });
+    
+    document.getElementById('badgesModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'badgesModal') {
+            e.target.classList.remove('show');
+        }
+    });
+    
+    document.getElementById('compareModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'compareModal') {
             e.target.classList.remove('show');
         }
     });
@@ -2862,11 +3194,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    // 番茄钟模式切换
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.dataset.mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            switchTimerMode(mode);
+        });
+    });
+    
+    // 学习提醒开关
+    document.getElementById('notificationToggle')?.addEventListener('change', (e) => {
+        const enabled = e.target.checked;
+        const timeContainer = document.getElementById('notificationTimeContainer');
+        
+        if (enabled) {
+            studyReminder.toggle(true);
+            if (timeContainer) timeContainer.style.display = 'flex';
+        } else {
+            studyReminder.toggle(false);
+            if (timeContainer) timeContainer.style.display = 'none';
+        }
+    });
+    
+    // 学习提醒时间选择
+    document.getElementById('notificationTime')?.addEventListener('change', (e) => {
+        const time = e.target.value;
+        if (time !== 'custom') {
+            studyReminder.setTime(time);
+            showNotification(`⏰ 提醒时间已设置为 ${time}`, 'success');
+        }
+    });
+    
+    // 初始化学习提醒状态
+    const notificationToggle = document.getElementById('notificationToggle');
+    const notificationTimeContainer = document.getElementById('notificationTimeContainer');
+    if (notificationToggle) {
+        notificationToggle.checked = studyReminder.enabled;
+        if (studyReminder.enabled && notificationTimeContainer) {
+            notificationTimeContainer.style.display = 'flex';
+            studyReminder.startChecking();
+        }
+    }
+    
     // ESC 键关闭所有模态框
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             document.getElementById('statsModal')?.classList.remove('show');
             document.getElementById('reportModal')?.classList.remove('show');
+            document.getElementById('badgesModal')?.classList.remove('show');
+            document.getElementById('compareModal')?.classList.remove('show');
             document.getElementById('quickMenuPanel')?.classList.remove('show');
         }
     });
