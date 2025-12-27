@@ -2337,6 +2337,205 @@ function promptLectureNote(courseId, lectureId) {
     }
 }
 
+// ==================== 音乐播放器系统 ====================
+class MusicPlayer {
+    constructor() {
+        this.audioContext = null;
+        this.audioElement = null;
+        this.currentSource = null;
+        this.gainNode = null;
+        this.isPlaying = false;
+        this.currentType = 'ambient';
+        this.currentSound = null;
+        
+        // 白噪音生成器
+        this.noiseGenerators = {
+            rain: null,
+            forest: null,
+            ocean: null,
+            wind: null
+        };
+    }
+    
+    init() {
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.gainNode = this.audioContext.createGain();
+            this.gainNode.connect(this.audioContext.destination);
+            this.gainNode.gain.value = 0.5;
+        } catch (e) {
+            console.error('音频初始化失败:', e);
+        }
+    }
+    
+    // 生成白噪音
+    generateWhiteNoise() {
+        const bufferSize = 2 * this.audioContext.sampleRate;
+        const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+        
+        return noiseBuffer;
+    }
+    
+    // 播放白噪音
+    playAmbient(type) {
+        this.stop();
+        
+        if (!this.audioContext) this.init();
+        
+        const source = this.audioContext.createBufferSource();
+        source.buffer = this.generateWhiteNoise();
+        source.loop = true;
+        
+        // 创建滤波器以模拟不同声音
+        const filter = this.audioContext.createBiquadFilter();
+        
+        switch(type) {
+            case 'rain':
+                filter.type = 'lowpass';
+                filter.frequency.value = 1000;
+                filter.Q.value = 0.5;
+                break;
+            case 'ocean':
+                filter.type = 'lowpass';
+                filter.frequency.value = 500;
+                filter.Q.value = 1;
+                break;
+            case 'forest':
+                filter.type = 'bandpass';
+                filter.frequency.value = 2000;
+                filter.Q.value = 0.8;
+                break;
+            case 'wind':
+                filter.type = 'highpass';
+                filter.frequency.value = 800;
+                filter.Q.value = 0.3;
+                break;
+        }
+        
+        source.connect(filter);
+        filter.connect(this.gainNode);
+        
+        source.start(0);
+        this.currentSource = source;
+        this.currentType = 'ambient';
+        this.currentSound = type;
+        this.isPlaying = true;
+        
+        this.updateUI();
+    }
+    
+    // 播放自定义音频
+    playCustom(url) {
+        this.stop();
+        
+        if (!this.audioContext) this.init();
+        
+        this.audioElement = new Audio(url);
+        this.audioElement.crossOrigin = "anonymous";
+        this.audioElement.loop = true;
+        
+        const source = this.audioContext.createMediaElementSource(this.audioElement);
+        source.connect(this.gainNode);
+        
+        this.audioElement.play().then(() => {
+            this.currentSource = source;
+            this.currentType = 'custom';
+            this.currentSound = url;
+            this.isPlaying = true;
+            this.updateUI();
+            showNotification('🎵 音频加载成功', 'success');
+        }).catch(err => {
+            console.error('播放失败:', err);
+            showNotification('❌ 音频加载失败，请检查链接', 'error');
+        });
+    }
+    
+    // 暂停
+    pause() {
+        if (this.audioElement) {
+            this.audioElement.pause();
+        } else if (this.currentSource) {
+            this.currentSource.stop();
+            this.currentSource = null;
+        }
+        this.isPlaying = false;
+        this.updateUI();
+    }
+    
+    // 恢复播放
+    resume() {
+        if (this.currentType === 'custom' && this.audioElement) {
+            this.audioElement.play();
+            this.isPlaying = true;
+        } else if (this.currentType === 'ambient' && this.currentSound) {
+            this.playAmbient(this.currentSound);
+        }
+        this.updateUI();
+    }
+    
+    // 停止
+    stop() {
+        if (this.audioElement) {
+            this.audioElement.pause();
+            this.audioElement = null;
+        }
+        if (this.currentSource) {
+            try {
+                this.currentSource.stop();
+            } catch(e) {}
+            this.currentSource = null;
+        }
+        this.isPlaying = false;
+    }
+    
+    // 设置音量
+    setVolume(value) {
+        if (this.gainNode) {
+            this.gainNode.gain.value = value / 100;
+        }
+        if (this.audioElement) {
+            this.audioElement.volume = value / 100;
+        }
+    }
+    
+    // 更新UI
+    updateUI() {
+        const playBtn = document.getElementById('musicPlayBtn');
+        const pauseBtn = document.getElementById('musicPauseBtn');
+        const nowPlayingText = document.getElementById('nowPlayingText');
+        
+        if (this.isPlaying) {
+            if (playBtn) playBtn.style.display = 'none';
+            if (pauseBtn) pauseBtn.style.display = 'inline-block';
+            
+            let displayText = '未播放';
+            if (this.currentType === 'ambient') {
+                const soundNames = {
+                    rain: '🌧️ 雨声',
+                    forest: '🌲 森林',
+                    ocean: '🌊 海浪',
+                    wind: '🍃 风声'
+                };
+                displayText = soundNames[this.currentSound] || '白噪音';
+            } else if (this.currentType === 'custom') {
+                displayText = '🎵 自定义音频';
+            }
+            if (nowPlayingText) nowPlayingText.textContent = displayText;
+        } else {
+            if (playBtn) playBtn.style.display = 'inline-block';
+            if (pauseBtn) pauseBtn.style.display = 'none';
+            if (nowPlayingText) nowPlayingText.textContent = '未播放';
+        }
+    }
+}
+
+const musicPlayer = new MusicPlayer();
+
 // 初始化课程跟踪器
 document.addEventListener('DOMContentLoaded', () => {
     courseTracker.render();
@@ -2362,6 +2561,82 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('courseNameInput')?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             document.getElementById('addCourseBtn')?.click();
+        }
+    });
+    
+    // ==================== 音乐播放器事件 ====================
+    
+    // 播放/暂停按钮
+    document.getElementById('musicPlayBtn')?.addEventListener('click', () => {
+        if (musicPlayer.currentSound || musicPlayer.currentType === 'custom') {
+            musicPlayer.resume();
+        } else {
+            showNotification('请先选择一种音乐或白噪音', 'warning');
+        }
+    });
+    
+    document.getElementById('musicPauseBtn')?.addEventListener('click', () => {
+        musicPlayer.pause();
+    });
+    
+    // 音量控制
+    document.getElementById('volumeSlider')?.addEventListener('input', (e) => {
+        const value = e.target.value;
+        musicPlayer.setVolume(value);
+        const volumeValue = document.getElementById('volumeValue');
+        if (volumeValue) volumeValue.textContent = value + '%';
+    });
+    
+    // 音乐类型切换
+    document.querySelectorAll('.music-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const type = tab.dataset.type;
+            
+            // 切换标签激活状态
+            document.querySelectorAll('.music-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // 切换面板
+            document.querySelectorAll('.music-panel').forEach(panel => panel.classList.remove('active'));
+            if (type === 'ambient') {
+                document.getElementById('ambientPanel')?.classList.add('active');
+            } else {
+                document.getElementById('customPanel')?.classList.add('active');
+            }
+        });
+    });
+    
+    // 白噪音按钮
+    document.querySelectorAll('.ambient-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const sound = btn.dataset.sound;
+            
+            // 高亮当前选中
+            document.querySelectorAll('.ambient-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // 播放白噪音
+            musicPlayer.playAmbient(sound);
+            showNotification(`🎵 开始播放白噪音`, 'success');
+        });
+    });
+    
+    // 加载自定义音频
+    document.getElementById('loadCustomAudio')?.addEventListener('click', () => {
+        const urlInput = document.getElementById('customAudioUrl');
+        const url = urlInput?.value.trim();
+        
+        if (url) {
+            musicPlayer.playCustom(url);
+        } else {
+            showNotification('请输入音频链接', 'warning');
+        }
+    });
+    
+    // 回车加载自定义音频
+    document.getElementById('customAudioUrl')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('loadCustomAudio')?.click();
         }
     });
 });

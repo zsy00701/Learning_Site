@@ -346,6 +346,54 @@
             </div>
         </div>
 
+        <!-- 音乐播放器 -->
+        <div class="music-section">
+            <h2>🎵 仙乐飘飘</h2>
+            <p class="section-desc">修行之时，听一曲清音，心静自然凉</p>
+            <div class="music-card">
+                <div class="music-controls">
+                    <button id="musicPlayBtn" class="btn-music-control">▶️ 播放</button>
+                    <button id="musicPauseBtn" class="btn-music-control" style="display:none;">⏸️ 暂停</button>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="50">
+                        <span id="volumeValue">50%</span>
+                    </div>
+                </div>
+                
+                <div class="music-source">
+                    <div class="music-tabs">
+                        <button class="music-tab active" data-type="ambient">白噪音</button>
+                        <button class="music-tab" data-type="custom">自定义</button>
+                    </div>
+                    
+                    <!-- 白噪音选择 -->
+                    <div id="ambientPanel" class="music-panel active">
+                        <div class="ambient-options">
+                            <button class="ambient-btn" data-sound="rain">🌧️ 雨声</button>
+                            <button class="ambient-btn" data-sound="forest">🌲 森林</button>
+                            <button class="ambient-btn" data-sound="ocean">🌊 海浪</button>
+                            <button class="ambient-btn" data-sound="wind">🍃 风声</button>
+                        </div>
+                        <p class="music-hint">选择一种白噪音，帮助专注</p>
+                    </div>
+                    
+                    <!-- 自定义音频 -->
+                    <div id="customPanel" class="music-panel">
+                        <input type="url" id="customAudioUrl" class="custom-audio-input" 
+                               placeholder="输入音频链接（支持 MP3/网易云音乐外链等）">
+                        <button id="loadCustomAudio" class="btn-secondary">加载音频</button>
+                        <p class="music-hint">💡 推荐：网易云音乐分享 → 复制外链</p>
+                    </div>
+                </div>
+                
+                <div class="now-playing">
+                    <span>🎼 当前：</span>
+                    <span id="nowPlayingText">未播放</span>
+                </div>
+            </div>
+        </div>
+
         <!-- 设置面板 -->
         <div class="settings-section">
             <h2>⚙️ 机关术</h2>
