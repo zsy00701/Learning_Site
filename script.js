@@ -2566,6 +2566,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // ==================== 音乐播放器事件 ====================
     
+    // 浮动按钮显示/隐藏面板
+    document.getElementById('musicFloatBtn')?.addEventListener('click', () => {
+        const panel = document.getElementById('musicFloatPanel');
+        if (panel) {
+            panel.classList.toggle('show');
+        }
+    });
+    
+    // 关闭面板按钮
+    document.getElementById('closeMusicPanel')?.addEventListener('click', () => {
+        const panel = document.getElementById('musicFloatPanel');
+        if (panel) {
+            panel.classList.remove('show');
+        }
+    });
+    
     // 播放/暂停按钮
     document.getElementById('musicPlayBtn')?.addEventListener('click', () => {
         if (musicPlayer.currentSound || musicPlayer.currentType === 'custom') {
@@ -2584,20 +2600,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = e.target.value;
         musicPlayer.setVolume(value);
         const volumeValue = document.getElementById('volumeValue');
-        if (volumeValue) volumeValue.textContent = value + '%';
+        if (volumeValue) volumeValue.textContent = value;
     });
     
     // 音乐类型切换
-    document.querySelectorAll('.music-tab').forEach(tab => {
+    document.querySelectorAll('.music-tab-mini').forEach(tab => {
         tab.addEventListener('click', () => {
             const type = tab.dataset.type;
             
             // 切换标签激活状态
-            document.querySelectorAll('.music-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.music-tab-mini').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             
             // 切换面板
-            document.querySelectorAll('.music-panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelectorAll('.music-source-panel').forEach(panel => panel.classList.remove('active'));
             if (type === 'ambient') {
                 document.getElementById('ambientPanel')?.classList.add('active');
             } else {
@@ -2607,12 +2623,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // 白噪音按钮
-    document.querySelectorAll('.ambient-btn').forEach(btn => {
+    document.querySelectorAll('.ambient-btn-mini').forEach(btn => {
         btn.addEventListener('click', () => {
             const sound = btn.dataset.sound;
             
             // 高亮当前选中
-            document.querySelectorAll('.ambient-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.ambient-btn-mini').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
             // 播放白噪音
