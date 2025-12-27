@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墨池剑冢 - 诗剑行</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗡️</text></svg>">
+</head>
+<body>
+    <!-- 加载动画 -->
+    <div id="loader" class="page-loader">
+        <div class="loader-content">
+            <div class="loader-icon">🗡️</div>
+            <div class="loader-text">墨池剑冢</div>
+            <div class="loader-subtitle">仗剑走天涯，诗酒趁年华</div>
+            <div class="loader-bar"><div class="loader-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- SVG定义区域 -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#c0392b;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <div class="container">
+        <!-- 头部 & 境界 -->
+        <header class="header">
+            <div class="header-main">
+                <h1>🗡️ 墨池剑冢</h1>
+                <p class="subtitle">仗剑走天涯，诗酒趁年华</p>
+            </div>
+            
+            <!-- 境界展示 -->
+            <div class="realm-display">
+                <div class="realm-badge">
+                    <div class="realm-icon">🧘</div>
+                    <div class="realm-info">
+                        <div class="realm-title">当前境界</div>
+                        <div class="realm-name" id="currentRealm">江湖小虾</div>
+                    </div>
+                </div>
+                <div class="realm-progress-section">
+                    <div class="realm-stats">
+                        <span>修为: <strong id="totalExpDisplay">0</strong> 时辰</span>
+                        <span>距突破: <strong id="nextLevelExp">5</strong> 时辰</span>
+                    </div>
+                    <div class="realm-bar-bg">
+                        <div class="realm-bar-fill" id="realmBarFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 激励名言 -->
+        <div class="quote-section">
+            <div class="quote-card">
+                <p id="quote" class="quote-text">加载中...</p>
+                <button id="newQuote" class="btn-secondary">换一首 (Q)</button>
+            </div>
+        </div>
+
+        <!-- 每日仪表盘 -->
+        <div class="dashboard-section">
+            <h2>📜 今日江湖</h2>
+            <div class="dashboard-grid">
+                <!-- 今日目标卡片 -->
+                <div class="dashboard-card goal-card">
+                    <div class="card-header">
+                        <span class="card-icon">🎯</span>
+                        <h3>修炼目标</h3>
+                    </div>
+                    <div class="goal-setting">
+                        <input type="number" id="goalHours" class="goal-input-inline" min="0.5" max="12" step="0.5" value="2">
+                        <span class="goal-unit">时辰</span>
+                        <button id="setGoalBtn" class="btn-icon" title="立誓">✒️</button>
+                    </div>
+                    <div class="goal-progress-inline">
+                        <div class="progress-ring">
+                            <svg width="120" height="120">
+                                <circle cx="60" cy="60" r="54" class="progress-ring-circle-bg"></circle>
+                                <circle cx="60" cy="60" r="54" class="progress-ring-circle" id="progressCircle"></circle>
+                            </svg>
+                            <div class="progress-text">
+                                <span id="todayHours" class="progress-number">0</span>
+                                <span class="progress-label">/ <span id="goalTarget">2</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="goal-status-inline" id="goalStatus">今日尚未起行</p>
+                </div>
+
+                <!-- 今日计划卡片 -->
+                <div class="dashboard-card plan-card">
+                    <div class="card-header">
+                        <span class="card-icon">📜</span>
+                        <h3>修行清单</h3>
+                    </div>
+                    <div class="plan-stats-inline">
+                        <div class="stat-item">
+                            <span class="stat-number" id="totalTasks">0</span>
+                            <span class="stat-label">总计</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item completed">
+                            <span class="stat-number" id="completedTasks">0</span>
+                            <span class="stat-label">已修</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item rate">
+                            <span class="stat-number" id="completionRate">0%</span>
+                            <span class="stat-label">进度</span>
+                        </div>
+                    </div>
+                    <div class="quick-add-task">
+                        <div class="task-input-group">
+                            <select id="taskDifficulty" class="task-select" title="难度">
+                                <option value="normal">丙级</option>
+                                <option value="hard">乙级</option>
+                                <option value="expert">甲级</option>
+                            </select>
+                            <select id="taskPriority" class="task-select" title="优先级">
+                                <option value="medium">中</option>
+                                <option value="high">急</option>
+                                <option value="low">缓</option>
+                            </select>
+                            <input type="text" id="taskInput" class="task-input-inline" placeholder="✍️ 记下今日要事..." maxlength="100">
+                        </div>
+                    </div>
+                    <button id="viewTasksBtn" class="btn-view-tasks">查看详情 →</button>
+                </div>
+
+                <!-- 打卡状态卡片 -->
+                <div class="dashboard-card checkin-card">
+                    <div class="card-header">
+                        <span class="card-icon">🏮</span>
+                        <h3>江湖历练</h3>
+                    </div>
+                    <div class="checkin-stats-inline">
+                        <div class="checkin-stat-item">
+                            <span class="checkin-number" id="currentStreak">0</span>
+                            <span class="checkin-label">连胜</span>
+                        </div>
+                        <div class="checkin-stat-item">
+                            <span class="checkin-number" id="totalDays">0</span>
+                            <span class="checkin-label">累计</span>
+                        </div>
+                    </div>
+                    <button id="checkinBtn" class="btn-checkin">🏮 点卯打卡</button>
+                    <p class="last-checkin-inline">上次: <span id="lastCheckin">未曾谋面</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 任务详情面板 -->
+        <div class="tasks-panel" id="tasksPanel" style="display: none;">
+            <div class="panel-header">
+                <h2>📜 修行卷轴</h2>
+                <button id="closeTasksBtn" class="btn-close">✕</button>
+            </div>
+            <div class="panel-content">
+                <div class="tasks-list" id="tasksContainer">
+                    <!-- 任务通过JS生成 -->
+                </div>
+                <div class="panel-actions">
+                    <button id="clearCompletedBtn" class="btn-panel-action">清除已修</button>
+                    <button id="clearAllTasksBtn" class="btn-panel-action danger">焚毁卷轴</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习计时器 -->
+        <div class="timer-section">
+            <h2>⏱️ 闭关修炼</h2>
+            <div class="timer-card-modern">
+                <div class="timer-main">
+                    <div class="timer-display-modern">
+                        <span id="timerDisplay">25:00</span>
+                    </div>
+                    <select id="pathSelect" class="path-select-modern">
+                        <option value="">🧘 请选择心法</option>
+                        <option value="cs-basics">👊 【内功】筑基心法</option>
+                        <option value="llm">🗡️ 【剑意】万剑归宗</option>
+                        <option value="rl">⚔️ 【破招】独孤九剑</option>
+                    </select>
+                </div>
+                <div class="timer-controls-modern">
+                    <button class="preset-btn-modern" data-minutes="25">一炷香</button>
+                    <button class="preset-btn-modern" data-minutes="45">一盏茶</button>
+                    <button class="preset-btn-modern" data-minutes="60">一个时辰</button>
+                    <button class="preset-btn-modern" data-minutes="90">九十息</button>
+                </div>
+                <div class="timer-buttons">
+                    <button id="startBtn" class="btn-timer start">⚡ 入定</button>
+                    <button id="pauseBtn" class="btn-timer pause" style="display: none;">⏸️ 暂缓</button>
+                    <button id="resetBtn" class="btn-timer reset">🔄 重来</button>
+                </div>
+                <div class="timer-hint">
+                    <span>💡 快捷键：空格 开始/暂停 | R 重置 | F 专注模式 | Q 换名言</span>
+                </div>
+            </div>
+            
+            <!-- 专注模式浮层 -->
+            <div id="focusMode" class="focus-mode">
+                <div class="focus-content">
+                    <div class="focus-quote" id="focusQuote">"天生我材必有用"</div>
+                    <div class="focus-timer" id="focusTimer">25:00</div>
+                    <div class="focus-path" id="focusPath">内功心法</div>
+                    <div class="focus-controls">
+                        <button id="focusStartBtn" class="btn-focus start">⚡ 入定</button>
+                        <button id="focusPauseBtn" class="btn-focus pause" style="display:none;">⏸️ 暂缓</button>
+                        <button id="focusResetBtn" class="btn-focus reset">🔄 重来</button>
+                    </div>
+                    <button id="exitFocusBtn" class="btn-exit-focus">退出专注 (ESC)</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 学习方向选择 -->
+        <div class="learning-paths">
+            <h2>📚 武学秘籍</h2>
+            <div class="paths-grid">
+                <div class="path-card" data-path="计算机基础">
+                    <div class="path-icon">👊</div>
+                    <h3>内功心法</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" data-progress="cs-basics"></div>
+                    </div>
+                    <p class="progress-text">已修 <span class="progress-num" data-num="cs-basics">0</span> 时辰</p>
+                    <p class="path-desc">计算机基础：练拳不练功，到老一场空。</p>
+                </div>
+                <div class="path-card" data-path="大模型">
+                    <div class="path-icon">🗡️</div>
+                    <h3>万剑归宗</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" data-progress="llm"></div>
+                    </div>
+                    <p class="progress-text">已修 <span class="progress-num" data-num="llm">0</span> 时辰</p>
+                    <p class="path-desc">大模型：海纳百川，剑气纵横三万里。</p>
+                </div>
+                <div class="path-card" data-path="强化学习">
+                    <div class="path-icon">⚔️</div>
+                    <h3>独孤九剑</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" data-progress="rl"></div>
+                    </div>
+                    <p class="progress-text">已修 <span class="progress-num" data-num="rl">0</span> 时辰</p>
+                    <p class="path-desc">强化学习：无招胜有招，破尽天下式。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习日历热力图 -->
+        <div class="heatmap-section">
+            <h2>📅 勤学录</h2>
+            <div class="heatmap-card">
+                <div class="heatmap-header">
+                    <span>过去91天修行记录</span>
+                    <div class="heatmap-legend">
+                        <span>疏</span>
+                        <div class="legend-item" data-level="0"></div>
+                        <div class="legend-item" data-level="1"></div>
+                        <div class="legend-item" data-level="2"></div>
+                        <div class="legend-item" data-level="3"></div>
+                        <div class="legend-item" data-level="4"></div>
+                        <span>勤</span>
+                    </div>
+                </div>
+                <div id="heatmapGrid" class="heatmap-grid"></div>
+            </div>
+        </div>
+        
+        <!-- 学习趋势图表 -->
+        <div class="chart-section">
+            <h2>📈 江湖风云</h2>
+            <div class="chart-card">
+                <div class="chart-tabs">
+                    <button class="chart-tab active" data-period="week">近七日</button>
+                    <button class="chart-tab" data-period="month">近一月</button>
+                </div>
+                <div id="chartContainer" class="chart-container"></div>
+                <div class="chart-stats"></div>
+            </div>
+        </div>
+
+        <!-- 学习笔记 -->
+        <div class="notes-section">
+            <h2>📝 修行札记</h2>
+            <div class="notes-card">
+                <div class="notes-input-area">
+                    <textarea id="noteInput" class="note-textarea" placeholder="记录今日修行心得、灵光一闪的想法..."></textarea>
+                    <button id="saveNoteBtn" class="btn-primary">📌 记录</button>
+                </div>
+                <div class="notes-search">
+                    <input type="text" id="noteSearch" class="note-search-input" placeholder="🔍 搜索札记...">
+                </div>
+                <div class="notes-list" id="notesList">
+                    <!-- 笔记通过JS生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 课程学习跟踪 -->
+        <div class="courses-section">
+            <h2>📖 修行秘籍录</h2>
+            <p class="section-desc">记录课程学习进度，每完成一讲，离宗师更近一步</p>
+            
+            <!-- 添加课程 -->
+            <div class="add-course-form">
+                <input type="text" id="courseNameInput" class="course-input" placeholder="课程名称（如：CS144）" maxlength="50">
+                <input type="url" id="courseNoteInput" class="course-input" placeholder="笔记链接（可选）">
+                <button id="addCourseBtn" class="btn-primary">➕ 添加课程</button>
+            </div>
+            
+            <!-- 课程列表 -->
+            <div id="coursesList" class="courses-list">
+                <!-- 课程卡片通过JS生成 -->
+            </div>
+        </div>
+
+        <!-- 成就系统 -->
+        <div class="achievements-section">
+            <h2>🏆 英雄榜</h2>
+            <p class="section-desc">解锁成就，见证你的修行历程</p>
+            <div class="achievements-grid" id="achievementsGrid">
+                <!-- 成就将通过 JavaScript 动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 数据管理 -->
+        <div class="data-management-section">
+            <h2>💾 藏经阁</h2>
+            <div class="data-card">
+                <p class="data-info">定期导出数据，以防丢失修行记录</p>
+                <div class="data-buttons">
+                    <button id="exportBtn" class="btn-secondary">📥 誊写经书（导出）</button>
+                    <button id="importBtn" class="btn-secondary">📤 研读残卷（导入）</button>
+                    <button id="clearBtn" class="btn-danger">🔥 火烧连营（清空）</button>
+                </div>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+            </div>
+        </div>
+
+        <!-- 设置面板 -->
+        <div class="settings-section">
+            <h2>⚙️ 机关术</h2>
+            <div class="settings-card">
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>🔔 鸣金收兵（提示音）</span>
+                        <p class="setting-desc">修行结束时鸣金示意</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>☕ 调息养气（休息提醒）</span>
+                        <p class="setting-desc">适时提醒调息，以免走火入魔</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="breakToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>⏰ 调息间隔</span>
+                    </div>
+                    <select id="breakInterval" class="setting-select">
+                        <option value="25">一炷香 (25分)</option>
+                        <option value="45" selected>一盏茶 (45分)</option>
+                        <option value="60">一个时辰 (60分)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 奇遇模态框 -->
+        <div id="adventureModal" class="adventure-modal">
+            <div class="adventure-content">
+                <div class="adventure-icon">🎁</div>
+                <h3 class="adventure-title">✨ 江湖奇遇</h3>
+                <p class="adventure-text" id="adventureText">修行途中，偶遇高人...</p>
+                <div class="adventure-reward">
+                    <span>获得修为:</span>
+                    <strong id="adventureExp">+0.5</strong>
+                    <span>时辰</span>
+                    <span id="adventureBonus" class="adventure-bonus"></span>
+                </div>
+                <button id="closeAdventureBtn" class="btn-primary">收入囊中</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>💪 大鹏一日同风起，扶摇直上九万里</p>
+        <p class="footer-sub">坚持修行，终成大器 | Made with ❤️</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
