@@ -44,13 +44,13 @@ const achievementsData = [
     { id: 'half-month', icon: '⭐', name: '半月修行', desc: '连续打卡15天', requirement: 'streak', value: 15 },
     { id: 'month-master', icon: '👑', name: '寒窗苦读', desc: '连续打卡30天', requirement: 'streak', value: 30 },
     { id: 'quarter-legend', icon: '🌟', name: '季度传奇', desc: '连续打卡90天', requirement: 'streak', value: 90 },
-    { id: 'hour-hero', icon: '⏰', name: '面壁图破', desc: '累计修行10时辰', requirement: 'hours', value: 10 },
-    { id: 'study-marathon', icon: '🏃', name: '磨穿铁砚', desc: '累计修行50时辰', requirement: 'hours', value: 50 },
-    { id: 'century-scholar', icon: '📚', name: '一代宗师', desc: '累计修行100时辰', requirement: 'hours', value: 100 },
-    { id: 'legendary', icon: '🏆', name: '万古流芳', desc: '累计修行500时辰', requirement: 'hours', value: 500 },
-    { id: 'cs-basics', icon: '👊', name: '内功深厚', desc: '内功心法修行20时辰', requirement: 'path-cs-basics', value: 20 },
-    { id: 'ai-expert', icon: '🗡️', name: '剑意通天', desc: '万剑归宗修行20时辰', requirement: 'path-llm', value: 20 },
-    { id: 'rl-master', icon: '⚔️', name: '独孤求败', desc: '独孤九剑修行20时辰', requirement: 'path-rl', value: 20 },
+    { id: 'hour-hero', icon: '⏰', name: '面壁图破', desc: '累计修行5时辰（10小时）', requirement: 'hours', value: 5 },
+    { id: 'study-marathon', icon: '🏃', name: '磨穿铁砚', desc: '累计修行25时辰（50小时）', requirement: 'hours', value: 25 },
+    { id: 'century-scholar', icon: '📚', name: '一代宗师', desc: '累计修行50时辰（100小时）', requirement: 'hours', value: 50 },
+    { id: 'legendary', icon: '🏆', name: '万古流芳', desc: '累计修行250时辰（500小时）', requirement: 'hours', value: 250 },
+    { id: 'cs-basics', icon: '👊', name: '内功深厚', desc: '内功心法修行10时辰（20小时）', requirement: 'path-cs-basics', value: 10 },
+    { id: 'ai-expert', icon: '🗡️', name: '剑意通天', desc: '万剑归宗修行10时辰（20小时）', requirement: 'path-llm', value: 10 },
+    { id: 'rl-master', icon: '⚔️', name: '独孤求败', desc: '独孤九剑修行10时辰（20小时）', requirement: 'path-rl', value: 10 },
     { id: 'first-task', icon: '📋', name: '初立誓愿', desc: '完成首个任务', requirement: 'task', value: 1 },
     { id: 'task-master', icon: '✅', name: '言出必行', desc: '累计完成50个任务', requirement: 'task', value: 50 },
     { id: 'note-taker', icon: '📝', name: '笔耕不辍', desc: '记录10条札记', requirement: 'notes', value: 10 }
@@ -59,14 +59,14 @@ const achievementsData = [
 // 境界系统定义（扩充）
 const realmLevels = [
     { name: '江湖小虾', exp: 0, icon: '🦐', title: '初入江湖', color: '#888' },
-    { name: '初窥门径', exp: 5, icon: '🐣', title: '已入门墙', color: '#6b7280' },
-    { name: '略有小成', exp: 20, icon: '🐤', title: '稍有心得', color: '#059669' },
-    { name: '融会贯通', exp: 50, icon: '🦅', title: '触类旁通', color: '#0891b2' },
-    { name: '炉火纯青', exp: 100, icon: '🔥', title: '技艺精湛', color: '#d97706' },
-    { name: '登峰造极', exp: 200, icon: '⛰️', title: '造诣非凡', color: '#7c3aed' },
-    { name: '一代宗师', exp: 500, icon: '🧙', title: '开宗立派', color: '#db2777' },
-    { name: '陆地神仙', exp: 1000, icon: '🌟', title: '传说人物', color: '#f59e0b' },
-    { name: '天人合一', exp: 2000, icon: '🌙', title: '超凡入圣', color: '#6366f1' }
+    { name: '初窥门径', exp: 2.5, icon: '🐣', title: '已入门墙', color: '#6b7280' },      // 5小时 = 2.5时辰
+    { name: '略有小成', exp: 10, icon: '🐤', title: '稍有心得', color: '#059669' },      // 20小时 = 10时辰
+    { name: '融会贯通', exp: 25, icon: '🦅', title: '触类旁通', color: '#0891b2' },      // 50小时 = 25时辰
+    { name: '炉火纯青', exp: 50, icon: '🔥', title: '技艺精湛', color: '#d97706' },      // 100小时 = 50时辰
+    { name: '登峰造极', exp: 100, icon: '⛰️', title: '造诣非凡', color: '#7c3aed' },    // 200小时 = 100时辰
+    { name: '一代宗师', exp: 250, icon: '🧙', title: '开宗立派', color: '#db2777' },     // 500小时 = 250时辰
+    { name: '陆地神仙', exp: 500, icon: '🌟', title: '传说人物', color: '#f59e0b' },    // 1000小时 = 500时辰
+    { name: '天人合一', exp: 1000, icon: '🌙', title: '超凡入圣', color: '#6366f1' }    // 2000小时 = 1000时辰
 ];
 
 // 奇遇事件库（大幅扩充）
@@ -194,10 +194,10 @@ class DataStore {
     }
 
     addStudyTime(path, minutes) {
-        const hours = minutes / 60;
-        this.data.totalHours += hours;
-        this.data.weekHours += hours;
-        this.data.todayStudied += hours;
+        const shichen = minutes / 120; // 1时辰 = 2小时 = 120分钟
+        this.data.totalHours += shichen;
+        this.data.weekHours += shichen;
+        this.data.todayStudied += shichen;
         this.data.totalSessions++;
         
         if (minutes > this.data.longestSession) {
@@ -205,11 +205,11 @@ class DataStore {
         }
         
         const today = new Date().toISOString().split('T')[0];
-        this.data.dailyHistory[today] = (this.data.dailyHistory[today] || 0) + hours;
+        this.data.dailyHistory[today] = (this.data.dailyHistory[today] || 0) + shichen;
         this.data.lastStudyDate = new Date().toISOString();
         
         if (path && this.data.learningPaths[path] !== undefined) {
-            this.data.learningPaths[path] += hours;
+            this.data.learningPaths[path] += shichen;
         }
         
         this.saveData();
@@ -819,7 +819,7 @@ class StudyTimer {
             if (Math.random() < 0.7) {
                 setTimeout(() => this.triggerAdventure(studiedMinutes), 500);
             } else {
-                showNotification(`🎉 修行完成！获得 ${(studiedMinutes / 60).toFixed(1)} 时辰修为`, 'success');
+                showNotification(`🎉 修行完成！获得 ${(studiedMinutes / 120).toFixed(1)} 时辰修为`, 'success');
             }
             
             this.reset();
@@ -830,7 +830,7 @@ class StudyTimer {
         const adventure = adventures[Math.floor(Math.random() * adventures.length)];
         const bonusMultiplier = { wisdom: 1.2, treasure: 1.3, enlightenment: 1.25, practice: 1.15, meditation: 1.1, karma: 1.2 };
         const multiplier = bonusMultiplier[adventure.type] || 1.0;
-        const baseExp = minutes / 60;
+        const baseExp = minutes / 120; // 1时辰 = 120分钟
         const bonusExp = baseExp * (multiplier - 1);
         
         const modal = document.getElementById('adventureModal');
