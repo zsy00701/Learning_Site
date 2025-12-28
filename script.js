@@ -2498,6 +2498,183 @@ class StudyReminder {
 
 const studyReminder = new StudyReminder();
 
+// ==================== 清心养性系统 ====================
+const purityQuotes = [
+    "心如止水，静则生慧，定则生明。",
+    "非淡泊无以明志，非宁静无以致远。",
+    "欲修其身者，先正其心；欲正其心者，先诚其意。",
+    "志当存高远，修身以自强。",
+    "君子慎独，心怀坦荡。",
+    "克己复礼为仁，一日克己复礼，天下归仁焉。",
+    "心若冰清，天塌不惊。",
+    "定静安虑得，此乃修身之道。",
+    "制怒者，当先制欲；制欲者，当先制心。",
+    "养心莫善于寡欲，至人之心如镜。",
+    "心不妄念，身不妄动，口不妄言。",
+    "修身如执玉，瑕不掩瑜，瑜不掩瑕。",
+    "清心寡欲，方得大道。",
+    "静以修身，俭以养德。",
+    "心正则万事正，心净则万事净。"
+];
+
+const purityBadges = [
+    { id: 'day3', name: '初心不改', desc: '三日清净', days: 3, icon: '🌱' },
+    { id: 'day7', name: '七日筑基', desc: '七日清净', days: 7, icon: '🌿' },
+    { id: 'day14', name: '意志如铁', desc: '十四日清净', days: 14, icon: '🍃' },
+    { id: 'day30', name: '心如明镜', desc: '三十日清净', days: 30, icon: '🌳' },
+    { id: 'day60', name: '六根清净', desc: '六十日清净', days: 60, icon: '🎋' },
+    { id: 'day90', name: '道心坚定', desc: '九十日清净', days: 90, icon: '🌲' },
+    { id: 'day180', name: '半载修行', desc: '半年清净', days: 180, icon: '🌴' },
+    { id: 'day365', name: '一年圆满', desc: '一年清净', days: 365, icon: '🎄' }
+];
+
+class PurityTracker {
+    constructor() {
+        this.data = this.loadData();
+    }
+    
+    loadData() {
+        const saved = localStorage.getItem('purityData');
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        return {
+            currentStreak: 0,
+            maxStreak: 0,
+            lastCheckin: null,
+            monthlyCount: 0,
+            lastMonthCheck: new Date().getMonth(),
+            history: {}, // 日期: true/false
+            unlockedBadges: []
+        };
+    }
+    
+    saveData() {
+        localStorage.setItem('purityData', JSON.stringify(this.data));
+    }
+    
+    checkin() {
+        const today = new Date().toDateString();
+        const lastCheckinDate = this.data.lastCheckin ? new Date(this.data.lastCheckin).toDateString() : null;
+        
+        if (lastCheckinDate === today) {
+            return { success: false, message: '今日已经打卡过了' };
+        }
+        
+        // 检查是否连续
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayDate = yesterday.toDateString();
+        
+        if (lastCheckinDate === yesterdayDate) {
+            this.data.currentStreak++;
+        } else if (!lastCheckinDate || lastCheckinDate !== today) {
+            this.data.currentStreak = 1;
+        }
+        
+        if (this.data.currentStreak > this.data.maxStreak) {
+            this.data.maxStreak = this.data.currentStreak;
+        }
+        
+        // 记录本月天数
+        const currentMonth = new Date().getMonth();
+        if (currentMonth !== this.data.lastMonthCheck) {
+            this.data.monthlyCount = 0;
+            this.data.lastMonthCheck = currentMonth;
+        }
+        this.data.monthlyCount++;
+        
+        // 记录历史
+        const todayStr = new Date().toISOString().split('T')[0];
+        this.data.history[todayStr] = true;
+        
+        this.data.lastCheckin = new Date().toISOString();
+        this.saveData();
+        this.checkBadges();
+        
+        return {
+            success: true,
+            message: `清净打卡成功！已坚持 ${this.data.currentStreak} 天`,
+            streak: this.data.currentStreak
+        };
+    }
+    
+    reset() {
+        if (confirm('心性波动乃人之常情。\n重新开始，勿忘初心。\n\n确定要重置清净记录吗？')) {
+            this.data.currentStreak = 0;
+            this.data.lastCheckin = null;
+            this.saveData();
+            this.updateUI();
+            showNotification('已重置，勿忘初心，再接再厉', 'info');
+            return true;
+        }
+        return false;
+    }
+    
+    checkBadges() {
+        const newlyUnlocked = [];
+        
+        purityBadges.forEach(badge => {
+            if (this.data.unlockedBadges.includes(badge.id)) return;
+            
+            if (this.data.currentStreak >= badge.days) {
+                this.data.unlockedBadges.push(badge.id);
+                newlyUnlocked.push(badge);
+            }
+        });
+        
+        if (newlyUnlocked.length > 0) {
+            this.saveData();
+            newlyUnlocked.forEach((badge, index) => {
+                setTimeout(() => {
+                    showNotification(`🏆 解锁成就：${badge.icon} ${badge.name}`, 'success');
+                }, index * 1500);
+            });
+        }
+    }
+    
+    updateUI() {
+        document.getElementById('purityDays').textContent = this.data.currentStreak;
+        document.getElementById('purityRecord').textContent = this.data.maxStreak;
+        document.getElementById('purityMonth').textContent = this.data.monthlyCount;
+        
+        // 更新格言
+        const quote = purityQuotes[Math.floor(Math.random() * purityQuotes.length)];
+        document.getElementById('purityQuote').textContent = quote;
+        
+        // 检查今日是否已打卡
+        const today = new Date().toDateString();
+        const lastCheckinDate = this.data.lastCheckin ? new Date(this.data.lastCheckin).toDateString() : null;
+        const checkinBtn = document.getElementById('purityCheckinBtn');
+        
+        if (lastCheckinDate === today && checkinBtn) {
+            checkinBtn.classList.add('disabled');
+            checkinBtn.querySelector('span:last-child').textContent = '今日已打卡';
+        }
+        
+        // 渲染徽章
+        this.renderBadges();
+    }
+    
+    renderBadges() {
+        const container = document.getElementById('purityAchievements');
+        if (!container) return;
+        
+        container.innerHTML = purityBadges.map(badge => {
+            const unlocked = this.data.unlockedBadges.includes(badge.id);
+            return `
+                <div class="purity-badge ${unlocked ? 'unlocked' : 'locked'}">
+                    <div class="purity-badge-icon">${badge.icon}</div>
+                    <div class="purity-badge-name">${badge.name}</div>
+                    <div class="purity-badge-desc">${badge.desc}</div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+const purityTracker = new PurityTracker();
+
 // ==================== 课程学习跟踪系统 ====================
 class CourseTracker {
     constructor() {
@@ -3237,6 +3414,41 @@ document.addEventListener('DOMContentLoaded', () => {
             studyReminder.startChecking();
         }
     }
+    
+    // ==================== 清心养性事件 ====================
+    
+    // 清心打卡
+    document.getElementById('purityCheckinBtn')?.addEventListener('click', () => {
+        const result = purityTracker.checkin();
+        
+        if (result.success) {
+            showNotification(result.message, 'success');
+            purityTracker.updateUI();
+            
+            // 添加发光效果
+            const mainCard = document.querySelector('.purity-stat-card.main');
+            if (mainCard) {
+                mainCard.classList.add('glowing');
+                setTimeout(() => mainCard.classList.remove('glowing'), 6000);
+            }
+            
+            // 显示励志语
+            const quote = purityQuotes[Math.floor(Math.random() * purityQuotes.length)];
+            setTimeout(() => {
+                showNotification(`💫 ${quote}`, 'info');
+            }, 1500);
+        } else {
+            showNotification(result.message, 'warning');
+        }
+    });
+    
+    // 重置记录
+    document.getElementById('purityResetBtn')?.addEventListener('click', () => {
+        purityTracker.reset();
+    });
+    
+    // 初始化清心养性UI
+    purityTracker.updateUI();
     
     // ESC 键关闭所有模态框
     document.addEventListener('keydown', (e) => {

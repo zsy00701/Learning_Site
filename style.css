@@ -3623,5 +3623,243 @@ input:checked + .slider:before {
         max-width: 100%;
         width: 100%;
     }
+    
+    .purity-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .purity-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .purity-achievements {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ==================== 清心养性模块 ==================== */
+.purity-section {
+    margin-bottom: 30px;
+}
+
+.purity-card {
+    background: var(--surface-color);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--surface-light);
+}
+
+.purity-header {
+    margin-bottom: 25px;
+}
+
+.purity-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.purity-icon {
+    font-size: 3rem;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+}
+
+.purity-title h3 {
+    margin: 0;
+    color: var(--ink-dark);
+    font-size: 1.5rem;
+}
+
+.purity-subtitle {
+    margin: 5px 0 0 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.purity-stats {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.purity-stat-card {
+    background: var(--paper-bg);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 2px solid var(--surface-light);
+    transition: all 0.3s ease;
+}
+
+.purity-stat-card.main {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(218, 165, 32, 0.1));
+    border-color: goldenrod;
+}
+
+.purity-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.purity-stat-card .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.purity-stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: goldenrod;
+    margin-bottom: 5px;
+}
+
+.purity-stat-card .stat-value-large {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: goldenrod;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+}
+
+.purity-stat-card .stat-sublabel {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.purity-quote {
+    background: var(--paper-bg);
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid goldenrod;
+    margin-bottom: 25px;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--ink-dark);
+    text-align: center;
+    font-style: italic;
+    line-height: 1.6;
+}
+
+.purity-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.btn-purity-checkin,
+.btn-purity-reset {
+    padding: 15px 25px;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-purity-checkin {
+    background: linear-gradient(135deg, goldenrod, #DAA520);
+    color: white;
+    box-shadow: 0 4px 15px rgba(218, 165, 32, 0.3);
+}
+
+.btn-purity-checkin:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(218, 165, 32, 0.5);
+}
+
+.btn-purity-checkin.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn-purity-reset {
+    background: var(--paper-bg);
+    color: var(--text-primary);
+    border: 2px solid var(--surface-light);
+}
+
+.btn-purity-reset:hover {
+    border-color: var(--cinnabar);
+    transform: translateY(-3px);
+}
+
+.btn-icon {
+    font-size: 1.2rem;
+}
+
+.purity-achievements {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+}
+
+.purity-badge {
+    padding: 15px;
+    background: var(--paper-bg);
+    border: 2px solid var(--surface-light);
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.purity-badge.unlocked {
+    border-color: goldenrod;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(218, 165, 32, 0.1));
+}
+
+.purity-badge.locked {
+    opacity: 0.4;
+    filter: grayscale(1);
+}
+
+.purity-badge.unlocked:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 5px 20px rgba(218, 165, 32, 0.3);
+}
+
+.purity-badge-icon {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+}
+
+.purity-badge.unlocked .purity-badge-icon {
+    animation: badgeGlow 2s ease-in-out infinite;
+}
+
+.purity-badge-name {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--ink-dark);
+    margin-bottom: 3px;
+}
+
+.purity-badge-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* 清心养性打卡动画 */
+@keyframes purityGlow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), 0 0 60px rgba(255, 215, 0, 0.3);
+    }
+}
+
+.purity-stat-card.main.glowing {
+    animation: purityGlow 2s ease-in-out 3;
 }
 
